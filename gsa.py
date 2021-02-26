@@ -30,6 +30,7 @@ class gsa:
         self.G = self.G0
         self.eps = kwargs.get('eps', 0.0001)
         self.kbest = kwargs.get('kbest', 1)
+        self.return_all_best = kwargs.get('return_all_best', False)
 
     def change_G(self, new_G):
         self.G = new_G
@@ -83,6 +84,7 @@ class gsa:
         self.d = len(f.__code__.co_varnames) - 1
         X, M, F, a, v = self.__make_init_population(f)
         #print("X\n", X)
+        values = []
         for i in range(self.num_it):
             #print("************* ", i, " ******************")
             fit = self.__fitness(X, f)
@@ -90,6 +92,7 @@ class gsa:
             self.G = self.__update_grav_force(i)
             #print("G: ", self.G)
             best, worst, best_i = self.__best_and_worst(fit)
+            values.append(X[best_i])
             #print(i, ": ", X[best_i],"--->", best, "                               worst: ", worst)
             #print("best: ", best)
             #print("worst: ", worst)
@@ -111,11 +114,15 @@ class gsa:
             X = self.__positions(X, v)
             if len(X) == 1:
                 break
-        values = []
-        for x in X:
-            values.append(f(x))
-        best, worst, best_i = self.__best_and_worst(values)
-        return X[best_i]
+        #values = []
+        #for x in X:
+            #values.append(f(x))
+        best, worst, best_i = self.__best_and_worst(self.__fitness(X, f))
+        values.append(X[best_i])
+        if self.return_all_best == True:
+            return values
+        else:
+            return X[best_i]
 
     def optimizeFit(self, f, fitF):
         self.if_fit = True
@@ -128,9 +135,12 @@ class gsa:
             best, worst, best_i = self.__best_and_worst(fit)
             M = self.__masses(fit, best, worst)
             Kbest = self.__Kbest(M, best_i)
-            F = self.__force(M, X, Kbest)
-            a = self.__acceleration(F, M[Kbest])
-            v = self.__velocity(v[Kbest], a)
+            M = M[Kbest]
+            X = X[Kbest]
+            v = v[Kbest]
+            F = self.__force(M, X)
+            a = self.__acceleration(F, M)
+            v = self.__velocity(v, a)
             if len(X) == 1:
                 break
         values = []
@@ -188,20 +198,6 @@ class gsa:
             F.append(f)
         return np.array(F)
 
-    def __force_OneM(self, M, X):
-        #F = np.zeros((len(Kbest), self.d))
-        F = []
-        for i in range(len(M)):
-            f = [0 for i in range(self.d)]
-            #print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% i: ",i)
-            if i != f:
-                #print("j: ", j)
-                R = np.linalg.norm(X[i] - X[j])
-                for k in range(self.d):
-                    f[k] += ((self.G * M[i] * M[j])/(R**3 + self.eps)) * (X[i][k] - X[j][k]) * np.random.rand()
-                    #F[i][k] += ((self.G * M[i] * M[j])/(R + self.eps)) * (X[i][k] - X[j][k]) * np.random.rand()
-        F.append(f)
-        return np.array(F)
 
     def __acceleration(self, F, M):
         a = np.zeros((len(F), self.d))
@@ -278,6 +274,8 @@ for i in range(20):
     #print(res)
     print(res, "--->", f2(res))
 #print(f([0,0]))
+example_all = gsa(N=30, b_low=-5.12, b_up=5.12, num_it=20, G=100, return_all_best=True)
+print(example_all.optimize(f2))
 
 
 
