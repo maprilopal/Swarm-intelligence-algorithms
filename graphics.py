@@ -4,6 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import plotly.graph_objects as go
+import plotly.express as px
 
 class show_graphics:
     def __init__(self, **kwargs):
@@ -16,7 +17,7 @@ class show_graphics:
         y = np.arange(self.b_low, self.b_up, 0.2)
         x, y = np.meshgrid(x, y)
         z = f([x,y])
-        surf = ax.plot_surface(x, y, z, cmap=cm.magma_r, edgecolor='none', antialiased=False)
+        surf = ax.plot_surface(x, y, z, cmap=cm.winter, edgecolor='none', antialiased=False)
         plt.show()
 
     def plot_f_3D_plotly(self, f):
@@ -24,13 +25,24 @@ class show_graphics:
         y = np.arange(self.b_low, self.b_up, 0.2)
         x, y = np.meshgrid(x, y)
         z = f([x, y])
-        fig = go.Figure(data=[go.Surface(z=z, x=x, y=y)])
+        fig = go.Figure(data=[go.Surface(z=z, x=x, y=y, colorscale='magma_r')])
         fig.show()
+
+    def show_values(self, values):
+        mean = np.mean(values, axis=0)
+        fig = go.Figure(data=go.Scatter(x=x, y=y, mode='lines+markers'))
+        #average = [np.average(x), np.average(y)]
+        fig.add_trace(go.Scatter(x=mean[0], y=mean[1], mode='markers'))
+        #fig.update_xaxes(range=[self.b_low, self.b_up])
+        #fig.update_yaxes(range=[self.b_low, self.b_up])
+        fig.show()
+
+
 
 
 def f(var):
     x1, x2 = var
     return x1**2 + x2**2 - 10*(np.cos(2*np.pi*x1) + np.cos(2*np.pi*x2)) + 20
 
-example = show_graphics(b_low = -5, b_up = 5)
-example.plot_f_3D_plotly(f)
+#example = show_graphics(b_low = -5, b_up = 5)
+#example.plot_f_3D_plotly(f)

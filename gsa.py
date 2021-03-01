@@ -1,10 +1,10 @@
 import numpy as np
+from graphics import show_graphics
+import time
 
-class CustomError(Exception):
-    """Raised when the number of arguments is too small or too big"""
-    pass
 
-class gsa:
+class Gsa:
+
     #Arguments:
     # f - objective function
     # N - population, number of agents
@@ -185,14 +185,6 @@ class gsa:
                     #print("j: ", j)
                     R = np.linalg.norm(X[i] - X[j])
                     for k in range(self.d):
-                        a1 = M[i] * M[j]
-                        a2 = self.G * a1
-                        a3 = a2/(R + self.eps)
-                        #print(X[i][k], " ", X[j][k])
-                        #print(X[i][k] - X[j][k])
-                        a4 = a3 * (X[i][k] - X[j][k])
-                        r = np.random.rand()
-                        a5 = a4 * r
                         f[k] += ((self.G * M[i] * M[j])/(R**3 + self.eps)) * (X[i][k] - X[j][k])
                         #F[i][k] += ((self.G * M[i] * M[j])/(R + self.eps)) * (X[i][k] - X[j][k]) * np.random.rand()
             F.append(f)
@@ -267,15 +259,28 @@ def fitExp4(var):
     x = var
     return 1+np.exp(x)
 
+def Matyas(var):
+    x1, x2 = var
+    return 0.26*(x1**2 + x2**2) - 0.48*(x1*x2)
+
 #ar = {'N': 5, 'b_low': -5.12, 'b_up': 5.12, 'num_it': 10}
-for i in range(20):
-    example = gsa(N = 50, b_low= -5.12, b_up= 5.12, num_it= 50, G = 100)
-    res = example.optimize(f2)
+values = []
+start = time.time()
+for i in range(1):
+    example = gsa(N = 100, b_low= -10, b_up= 10, num_it= 100, G = 100)
+    res = example.optimize(Matyas)
+    values.append(res)
     #print(res)
-    print(res, "--->", f2(res))
+    #print(res, "--->", f2(res))
 #print(f([0,0]))
-example_all = gsa(N=30, b_low=-5.12, b_up=5.12, num_it=20, G=100, return_all_best=True)
-print(example_all.optimize(f2))
+end = time.time()
+print("time: ", end - start)
+print(np.mean(values, axis=0))
+#example_all = gsa(N=50, b_low=-5.12, b_up=5.12, num_it=50, G=100, return_all_best=True)
+#print(example_all.optimize(f2))
+
+#graphsMatyas = show_graphics()
+#graphsMatyas.plot_f_3D_plotly(Matyas)
 
 
 
