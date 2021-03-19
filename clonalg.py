@@ -32,10 +32,10 @@ class Clonalg:
             # Get mutation range for all individual
             p = self.__p(t)
             pi = self.__p_i(p, fit)
-            # Hipermutation
-            hipermut = self.__hipermutation(copies, pi)
+            # Hypermutation
+            hypermut = self.__hypermutation(copies, pi)
             # Check if copies are better
-            stay = self.__check_copies(copies, hipermut, f)
+            stay = self.__check_copies(copies, hypermut, f)
             # Replace the rest
             a = 1 - self.c*self.N
             new_X = (self.b_up - self.b_low) * np.random.uniform(0, 1, (int(self.N*(1 - self.c)), self.d)) + self.b_low
@@ -46,10 +46,6 @@ class Clonalg:
         return X[best_i]
 
 
-
-
-
-
     def __copies(self, X):
         Nc = np.array([int(self.beta*self.N/i) for i in range(1, int(self.c*self.N)+1)])
         copies = [[] for i in range(int(self.c*self.N))]
@@ -57,8 +53,7 @@ class Clonalg:
             copies[i] = [X[i] for j in range(Nc[i])]
         return copies
 
-    def __hipermutation(self, copies, p_i):
-        #gaussian = np.random.normal(0, 1, (self.N, self.d))
+    def __hypermutation(self, copies, p_i):
         diff = self.b_up - self.b_low
         for i in range(len(copies)):
             for j in range(len(copies[i])):
@@ -66,26 +61,27 @@ class Clonalg:
                 copies[i][j] = elem
         return copies
 
-    def __check_copies(self, copies, hiper_copies, f):
+    def __check_copies(self, copies, hyper_copies, f):
         stay = []
         if self.if_min == True:
             for i in range(len(copies)):
-                for j in range(len(copies[i])):
-                    if f(hiper_copies[i][j]) < f(copies[i][j]):
-                        stay.append(hiper_copies[i][j])
-                    else:
-                        stay.append(copies[i][j])
+                f_hyper = np.array([f(hyper_copies[i][j]) for j in range(len(copies[i]))])
+                f_copy = f(copies[i][0])
+                best, worst, best_i = self.__best_and_worst(f_hyper)
+                if best < f_copy:
+                    stay.append(hyper_copies[i][best_i])
+                else:
+                    stay.append(copies[i][0])
         if self.if_min == False:
             for i in range(len(copies)):
-                for j in range(len(copies[i])):
-                    if f(hiper_copies[i][j]) > f(copies[i][j]):
-                        stay.append(hiper_copies[i][j])
-                    else:
-                        stay.append(copies[i][j])
+                f_hyper = np.array([f(hyper_copies[i][j]) for j in range(len(copies[i]))])
+                f_copy = f(copies[i][0])
+                best, worst, best_i = self.__best_and_worst(f_hyper)
+                if best > f_copy:
+                    stay.append(hyper_copies[i][best_i])
+                else:
+                    stay.append(copies[i][0])
         return np.array(stay)
-
-
-
 
     def __p(self, t):
         return self.p_max*np.exp(self.fi*t/self.generations)

@@ -267,7 +267,7 @@ def Matyas(var):
 values = []
 start = time.time()
 for i in range(1):
-    example = gsa(N = 100, b_low= -10, b_up= 10, num_it= 100, G = 100)
+    example = Gsa(N = 100, b_low= -10, b_up= 10, num_it= 100, G = 100)
     res = example.optimize(Matyas)
     values.append(res)
     #print(res)
