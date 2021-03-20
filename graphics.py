@@ -29,10 +29,23 @@ class show_graphics:
         fig.show()
 
     def show_values(self, values):
+        x = [values[i][0] for i in range(len(values))]
+        y = [values[i][1] for i in range(len(values))]
+        mean = np.mean(values, axis=0)
+        fig = go.Figure(data=go.Scatter(x=x, y=y, mode='markers'))
+        #average = [np.average(x), np.average(y)]
+        fig.add_trace(go.Scatter(x=[mean[0]], y=[mean[1]], mode='markers'))
+        #fig.update_xaxes(range=[self.b_low, self.b_up])
+        #fig.update_yaxes(range=[self.b_low, self.b_up])
+        fig.show()
+
+    def show_progress(self, values):
+        x = [values[i][0] for i in range(len(values))]
+        y = [values[i][1] for i in range(len(values))]
         mean = np.mean(values, axis=0)
         fig = go.Figure(data=go.Scatter(x=x, y=y, mode='lines+markers'))
         #average = [np.average(x), np.average(y)]
-        fig.add_trace(go.Scatter(x=mean[0], y=mean[1], mode='markers'))
+        fig.add_trace(go.Scatter(x=[mean[0]], y=[mean[1]], mode='markers'))
         #fig.update_xaxes(range=[self.b_low, self.b_up])
         #fig.update_yaxes(range=[self.b_low, self.b_up])
         fig.show()

@@ -1,4 +1,5 @@
 import numpy as np
+from graphics import show_graphics
 
 
 class Clonalg:
@@ -15,10 +16,11 @@ class Clonalg:
         self.k = kwargs.get('k', 0.95)
         self.if_min = kwargs.get('if_min', True)
 
-    def make_population(self, f):
+    def optimize(self, f):
         # Generate initial population
         self.d = len(f.__code__.co_varnames) - 1
         X = (self.b_up - self.b_low) * np.random.uniform(0, 1, (self.N, self.d)) + self.b_low
+        progress = []
         for t in range(self.generations):
             # Evaluate the fitness for each agent
             fit = np.array([f(X[i]) for i in range(self.N)])
@@ -29,6 +31,7 @@ class Clonalg:
             copies = self.__copies(X)
             # Get the best and the worst of fit
             self.best, self.worst, best_i = self.__best_and_worst(fit)
+            progress.append(X[best_i])
             # Get mutation range for all individual
             p = self.__p(t)
             pi = self.__p_i(p, fit)
@@ -43,7 +46,8 @@ class Clonalg:
             X = np.concatenate((stay, new_X), axis=0)
         fit = np.array([f(X[i]) for i in range(self.N)])
         self.best, self.worst, best_i = self.__best_and_worst(fit)
-        return X[best_i]
+        progress.append(X[best_i])
+        return [X[best_i], progress]
 
 
     def __copies(self, X):
@@ -109,5 +113,12 @@ def f(var):
     x1, x2 = var
     return x1**2 + x2**2 - 10*(np.cos(2*np.pi*x1) + np.cos(2*np.pi*x2)) + 20
 
-first = Clonalg()
-print(first.make_population(f))
+first = Clonalg(generations=50)
+#val = []
+#for i in range(20):
+    #val.append(first.optimize(f)[0])
+val = first.optimize(f)[1]
+show = show_graphics()
+show.show_progress(val)
+
+
