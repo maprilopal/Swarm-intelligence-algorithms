@@ -6,7 +6,7 @@ from matplotlib.ticker import LinearLocator
 import plotly.graph_objects as go
 import plotly.express as px
 
-class show_graphics:
+class Graphics:
     def __init__(self, **kwargs):
         self.b_low = kwargs.get('b_low', -10)
         self.b_up = kwargs.get('b_up', 10)
@@ -32,9 +32,8 @@ class show_graphics:
         x = [values[i][0] for i in range(len(values))]
         y = [values[i][1] for i in range(len(values))]
         mean = np.mean(values, axis=0)
-        fig = go.Figure(data=go.Scatter(x=x, y=y, mode='markers'))
-        #average = [np.average(x), np.average(y)]
-        fig.add_trace(go.Scatter(x=[mean[0]], y=[mean[1]], mode='markers'))
+        fig = go.Figure(data=go.Scatter(x=x, y=y, mode='markers', name='values', marker_color='rgba(152,0,0,.8)'))
+        fig.add_trace(go.Scatter(x=[mean[0]], y=[mean[1]], mode='markers', name='average value'))
         #fig.update_xaxes(range=[self.b_low, self.b_up])
         #fig.update_yaxes(range=[self.b_low, self.b_up])
         fig.show()
@@ -43,12 +42,17 @@ class show_graphics:
         x = [values[i][0] for i in range(len(values))]
         y = [values[i][1] for i in range(len(values))]
         mean = np.mean(values, axis=0)
-        fig = go.Figure(data=go.Scatter(x=x, y=y, mode='lines+markers'))
+        fig = go.Figure(data=go.Scatter(x=x, y=y, mode='lines+markers', name='progress', marker=dict( size=16,
+                                                                                                      color=np.random.randn(500),
+                                                                                                      colorscale='Viridis',
+                                                                                                      showscale=True)))
         #average = [np.average(x), np.average(y)]
-        fig.add_trace(go.Scatter(x=[mean[0]], y=[mean[1]], mode='markers'))
+        fig.add_trace(go.Scatter(x=[mean[0]], y=[mean[1]], mode='markers', name='average value'))
         #fig.update_xaxes(range=[self.b_low, self.b_up])
         #fig.update_yaxes(range=[self.b_low, self.b_up])
         fig.show()
+
+
 
 
 

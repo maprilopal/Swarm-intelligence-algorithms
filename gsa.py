@@ -1,5 +1,5 @@
 import numpy as np
-from graphics import show_graphics
+from graphics import Graphics
 import time
 
 
@@ -71,7 +71,7 @@ class Gsa:
         # Calculate the masses from fitness
         M = self.__masses(fit, best, worst)
         # Calculate the force
-        F = self.__force(M, X, M.argsort())
+        F = self.__force(M, X)
         # Calculate acceleration
         a = self.__acceleration(F, M)
         # Calculate velocity
@@ -83,40 +83,23 @@ class Gsa:
     def optimize(self, f):
         self.d = len(f.__code__.co_varnames) - 1
         X, M, F, a, v = self.__make_init_population(f)
-        #print("X\n", X)
         values = []
         for i in range(self.num_it):
-            #print("************* ", i, " ******************")
             fit = self.__fitness(X, f)
-            #print("fit\n", fit)
             self.G = self.__update_grav_force(i)
-            #print("G: ", self.G)
             best, worst, best_i = self.__best_and_worst(fit)
             values.append(X[best_i])
-            #print(i, ": ", X[best_i],"--->", best, "                               worst: ", worst)
-            #print("best: ", best)
-            #print("worst: ", worst)
-            #print("best_i ", best_i)
             M = self.__masses(fit, best, worst)
-            #print("M\n", M)
             Kbest = self.__Kbest(M, best_i)
-            # Get rid of worsts agents
             M = M[Kbest]
             X = X[Kbest]
             v = v[Kbest]
-            #calculate force
             F = self.__force(M, X)
-            #print("F\n",F)
             a = self.__acceleration(F, M)
-            #print("a\n",a)
             v = self.__velocity(v, a)
-            #print("v\n",v)
             X = self.__positions(X, v)
             if len(X) == 1:
                 break
-        #values = []
-        #for x in X:
-            #values.append(f(x))
         best, worst, best_i = self.__best_and_worst(self.__fitness(X, f))
         values.append(X[best_i])
         if self.return_all_best == True:
@@ -175,18 +158,14 @@ class Gsa:
         return fit
 
     def __force(self, M, X):
-        #F = np.zeros((len(Kbest), self.d))
         F = []
         for i in range(len(M)):
             f = [0 for i in range(self.d)]
-            #print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% i: ",i)
             for j in range(len(M)):
                 if i != j:
-                    #print("j: ", j)
                     R = np.linalg.norm(X[i] - X[j])
                     for k in range(self.d):
                         f[k] += ((self.G * M[i] * M[j])/(R**3 + self.eps)) * (X[i][k] - X[j][k])
-                        #F[i][k] += ((self.G * M[i] * M[j])/(R + self.eps)) * (X[i][k] - X[j][k]) * np.random.rand()
             F.append(f)
         return np.array(F)
 
@@ -201,11 +180,7 @@ class Gsa:
         new_v = np.zeros((len(a), self.d))
         for i in range(len(a)):
             for j in range(self.d):
-                r = np.random.rand()
-                a1 = v[i][j]
-                a2 = a[i][j]
-                #new_v[i][j] = np.random.rand()*v[i][j] + a[i][j]
-                new_v[i][j] = r*a1 + a2
+                new_v[i][j] = np.random.rand()*v[i][j] + a[i][j]
         return new_v
 
     def __positions(self, X, v):
@@ -222,7 +197,6 @@ class Gsa:
         return new_X
 
     def __update_grav_force(self, t):
-        #beta = np.random.rand()
         beta = 20
         return self.G0*np.exp((-beta*t)/self.num_it) + self.eps
 

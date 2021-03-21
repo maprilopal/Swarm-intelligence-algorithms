@@ -1,6 +1,6 @@
 import numpy as np
-from graphics import show_graphics
-
+from graphics import Graphics
+import pandas as pd
 
 class Clonalg:
 
@@ -48,7 +48,6 @@ class Clonalg:
         self.best, self.worst, best_i = self.__best_and_worst(fit)
         progress.append(X[best_i])
         return [X[best_i], progress]
-
 
     def __copies(self, X):
         Nc = np.array([int(self.beta*self.N/i) for i in range(1, int(self.c*self.N)+1)])
@@ -106,19 +105,102 @@ class Clonalg:
         return best, worst, best_i
 
 
+class StatisticClonalg(Clonalg):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.repeat = kwargs.get('repeat', 10)
+
+    def check_N(self, f):
+        result = []
+        values = []
+        for N in self.N:
+            clonalg = Clonalg(N=N)
+            for i in range(self.repeat):
+                best = clonalg.optimize(f)[0]
+                values.append(best)
+            mean = np.mean(values, axis=0)
+            result.append((N, mean, f(mean)))
+        return pd.DataFrame(result, columns=['N', 'best', 'f(best)'])
+
+    def check_gen(self, f):
+        result = []
+        for gen in self.generations:
+            clonalg = Clonalg(generations=gen)
+            result.append((gen, clonalg.optimize(f)[0]))
+        return result
+
+    def check_p(self, f):
+        result = []
+        for p in self.p_max:
+            clonalg = Clonalg(p_max=p)
+            result.append((p, clonalg.optimize(f)[0]))
+        return result
+
+    def check_beta(self, f):
+        result = []
+        for beta in self.beta:
+            clonalg = Clonalg(beta=beta)
+            result.append((beta, clonalg.optimize(f)[0]))
+        return result
+
+    def check_fi(self, f):
+        result = []
+        for fi in self.fi:
+            clonalg = Clonalg(fi=fi)
+            result.append((fi, clonalg.optimize(f, fi=fi)))
+        return result
+
+    def check_c(self, f):
+        result = []
+        for c in self.c:
+            clonalg = Clonalg(c=c)
+            result.append((c, clonalg.optimize(f)))
+        return result
+
+    def check_k(self, f):
+        result = []
+        for k in self.k:
+            clonalg = Clonalg(k=k)
+            result.append((k, clonalg.optimize(f)))
+        return result
+
+    def check_all(self, f):
+        result = []
+        values = []
+        for N in self.N:
+            for gen in self.generations:
+                for p in self.p_max:
+                    for beta in self.beta:
+                        for fi in self.fi:
+                            for c in self.c:
+                                for k in self.k:
+                                    clonalg = Clonalg(N=N, generations=gen, p=p, beta=beta, fi=fi, c=c, k=k)
+                                    for i in range(self.repeat):
+                                        best = clonalg.optimize(f)[0]
+                                        values.append(best)
+                                    mean = np.mean(values, axis=0)
+                                    result.append((N, mean, f(mean)))
+        return pd.DataFrame(result, columns=['N', 'best', 'f(best)'])
+
+
+
+
 
 
 
 def f(var):
     x1, x2 = var
     return x1**2 + x2**2 - 10*(np.cos(2*np.pi*x1) + np.cos(2*np.pi*x2)) + 20
-
-first = Clonalg(generations=50)
-#val = []
-#for i in range(20):
-    #val.append(first.optimize(f)[0])
-val = first.optimize(f)[1]
-show = show_graphics()
-show.show_progress(val)
+N = list(range(10,50,10))
+gen = list(range(5,20,5))
+p = list(map(lambda x: x/10.0, range(5,35,10)))
+beta = list(map(lambda x: x/10.0, range(5,35,10)))
+fi = list(map(lambda x: x/10.0, range(1,8,2)))
+c = list(map(lambda x: x/10.0, range(1,6,1)))
+k = list(map(lambda x: x/10.0, range(1,8,2)))
+ex = StatisticClonalg(N=N, generations=gen, p_max=p, beta=beta, fi=fi, c=c, k=k)
+data = ex.check_all(f)
+#df = pd.DataFrame(data, columns=['N', 'value'])
+print(data)
 
 
