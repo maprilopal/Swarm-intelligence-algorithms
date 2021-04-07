@@ -179,8 +179,8 @@ class StatisticClonalg(Clonalg):
                                         best = clonalg.optimize(f)[0]
                                         values.append(best)
                                     mean = np.mean(values, axis=0)
-                                    result.append((N, mean, f(mean)))
-        return pd.DataFrame(result, columns=['N', 'best', 'f(best)'])
+                                    result.append((N, gen, p, beta, fi, c, k, mean, f(mean)))
+        return pd.DataFrame(result, columns=['N', 'gen', 'p','beta','fi','c','k', 'best', 'f(best)'])
 
 
 
@@ -191,7 +191,7 @@ class StatisticClonalg(Clonalg):
 def f(var):
     x1, x2 = var
     return x1**2 + x2**2 - 10*(np.cos(2*np.pi*x1) + np.cos(2*np.pi*x2)) + 20
-N = list(range(10,50,10))
+N = list(range(10,20,10))
 gen = list(range(5,20,5))
 p = list(map(lambda x: x/10.0, range(5,35,10)))
 beta = list(map(lambda x: x/10.0, range(5,35,10)))
