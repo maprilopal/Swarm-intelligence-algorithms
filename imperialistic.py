@@ -16,9 +16,9 @@ class Imperialistic:
 
 
     def optimize(self, f):
-        self.d = len(f.__code__.co_varnames) - 1
+        d = len(f.__code__.co_varnames) - 1
         # Initialize countries
-        X = (self.b_up - self.b_low) * np.random.rand(self.N, self.d) + self.b_low
+        X = (self.b_up - self.b_low) * np.random.rand(self.N, d) + self.b_low
         # Cost of every country
         costCountry = np.array([f(X[i]) for i in range(self.N)])
         sortedByCost = np.argsort(costCountry)
@@ -35,13 +35,24 @@ class Imperialistic:
         numColOfImp = np.round(self.numCol*powerImp)
         # Divide colonies in random way
         colOfImp = self.__divideColonies(colonies, numColOfImp)
-        # Total power of empire
-        totalPowerEmp = self.__totalPowerOfEmpire(costCountry, colOfImp)
+        # Move the colonies toward their revelant imperialst
+        newColonies = self.__moveColonies(colOfImp, imperiors, d)
 
 
 
 
-        return totalPowerEmp
+        # Total cost of an empire (total power)
+        totalCostEmp = self.__totalPowerOfEmpire(costCountry, colOfImp)
+        # Normalized total cost
+        normTotalCostEmp = totalCostEmp - np.max(totalCostEmp)
+        # Possession probability of each empire
+        p = np.abs(normTotalCostEmp/ np.sum(normTotalCostEmp))
+
+
+
+
+
+        return newColonies
 
 
     def __divideColonies(self, colonies, numColOfImp):
@@ -56,6 +67,24 @@ class Imperialistic:
             divColonies.append(colonies[sumCol:sumCol+int(num)])
             sumCol += int(num)
         return divColonies
+
+    def __moveColonies(self, colonies, imperiors, d):
+        for imp in range(len(imperiors)):
+            for col in range(len(colonies[imp])):
+                for i in range(d):
+                    valCol = colonies[col][i]
+                    valImp = imperiors[imp][i]
+                    diff = imperiors[imp][i] - colonies[imp][col][i]
+                    if diff >= 0:
+                        colonies[col][i] += np.random.uniform(0, self.beta*diff)
+                    else:
+                        colonies[col][i] += np.random.uniform(self.beta*diff, 0)
+        return colonies
+
+
+
+
+
 
     def __totalPowerOfEmpire(self, costOfCountry, coloniesOfImp):
         totalPowerEmp = []
