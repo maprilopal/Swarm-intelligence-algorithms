@@ -25,7 +25,7 @@ class Imperialistic:
         X = X[sortedByCost]
         costCountry = costCountry[sortedByCost]
         imperiors = X[:self.numImp]
-        colonies = X[self.numImp:]
+        countries= X[self.numImp:]
         # Normalized cost
         normCost = costCountry[:self.numImp] - np.max(costCountry[:self.numImp])
         # Power of every imperialist
@@ -34,19 +34,25 @@ class Imperialistic:
         # Initial number of colonies of an empire
         numColOfImp = np.round(self.numCol*powerImp)
         # Divide colonies in random way
-        colOfImp = self.__divideColonies(colonies, numColOfImp)
+        colonies = self.__divideColonies(countries, numColOfImp)
         # Move the colonies toward their revelant imperialst
-        newColonies = self.__moveColonies(colOfImp, imperiors, d)
-
-
-
+        colonies = self.__moveColonies(colonies, imperiors, d)
+        # Check if the imperialist have better positions than a colony
+        imperiors, colonies = self.__checkPosition(colonies, imperiors, f)
 
         # Total cost of an empire (total power)
-        totalCostEmp = self.__totalPowerOfEmpire(costCountry, colOfImp)
+        totalCostEmp = self.__totalPowerOfEmpire(costCountry, colonies)
         # Normalized total cost
         normTotalCostEmp = totalCostEmp - np.max(totalCostEmp)
         # Possession probability of each empire
-        p = np.abs(normTotalCostEmp/ np.sum(normTotalCostEmp))
+        P = np.abs(normTotalCostEmp/ np.sum(normTotalCostEmp))
+        R = np.random.uniform(0,1, size = np.size(P))
+        D = P - R
+        maxImp = np.argmax(D)
+
+        # Imperialistic Competition
+
+
 
 
 
@@ -81,10 +87,21 @@ class Imperialistic:
                         colonies[col][i] += np.random.uniform(self.beta*diff, 0)
         return colonies
 
-
-
-
-
+    def __checkPosition(self, colonies, imperiors, f):
+        for i in range(len(imperiors)):
+            imperior = imperiors[i]
+            for colony in colonies[i]:
+                if self.if_min == True:
+                    if f(imperior) < f(colony):
+                        imperiors[i] = colonies[i]
+                        colonies[i] = imperior
+                        imperior = colonies[i]
+                if self.if_min == False:
+                    if f(imperior) > f(colony):
+                        imperiors[i] = colonies[i]
+                        colonies[i] = imperior
+                        imperior = colonies[i]
+        return imperiors, colonies
 
     def __totalPowerOfEmpire(self, costOfCountry, coloniesOfImp):
         totalPowerEmp = []
@@ -95,6 +112,14 @@ class Imperialistic:
                 meanColony = np.mean(coloniesOfImp[i])
             totalPowerEmp.append(costOfCountry[i]+self.xi*meanColony)
         return totalPowerEmp
+
+    #def __peekWeakestColony(self, colonies, f):
+        #weakest = colonies[len(colonies) - 1][0]
+        #for i in range(1, len(colonies(len(colonies) - 1))):
+            #if self.if_min == True:
+                #if f(weakest) < f(colonies[i]):
+                    #weakest =
+
 
 
 
