@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 class Imperialistic:
@@ -24,7 +26,7 @@ class Imperialistic:
         sortedByCost = np.argsort(costCountry)
         X = X[sortedByCost]
         costCountry = costCountry[sortedByCost]
-        imperiors = X[:self.numImp]
+        imperialists = X[:self.numImp]
         countries= X[self.numImp:]
         # Normalized cost
         normCost = costCountry[:self.numImp] - np.max(costCountry[:self.numImp])
@@ -35,10 +37,14 @@ class Imperialistic:
         numColOfImp = np.round(self.numCol*powerImp)
         # Divide colonies in random way
         colonies = self.__divideColonies(countries, numColOfImp)
+        # Elimiate powerless empires
+        a = self.__eliminatePowerlessEmpires(colonies, imperialists)
+
+
         # Move the colonies toward their revelant imperialst
-        colonies = self.__moveColonies(colonies, imperiors, d)
+        colonies = self.__moveColonies(colonies, imperialists, d)
         # Check if the imperialist have better positions than a colony
-        imperiors, colonies = self.__checkPosition(colonies, imperiors, f)
+        imperiors, colonies = self.__checkPosition(colonies, imperialists, f)
 
         # Total cost of an empire (total power)
         totalCostEmp = self.__totalPowerOfEmpire(costCountry, colonies)
@@ -51,6 +57,9 @@ class Imperialistic:
         maxImp = np.argmax(D)
 
         # Imperialistic Competition
+        colonies, imperialists = self.__competition(colonies, imperialists, maxImp, f)
+        i = imperialists
+        print(i)
 
 
 
@@ -58,7 +67,8 @@ class Imperialistic:
 
 
 
-        return newColonies
+
+        return colonies
 
 
     def __divideColonies(self, colonies, numColOfImp):
@@ -74,51 +84,60 @@ class Imperialistic:
             sumCol += int(num)
         return divColonies
 
-    def __moveColonies(self, colonies, imperiors, d):
-        for imp in range(len(imperiors)):
+    def __moveColonies(self, colonies, imperialists, d):
+        for imp in range(len(imperialists)):
             for col in range(len(colonies[imp])):
                 for i in range(d):
                     valCol = colonies[col][i]
-                    valImp = imperiors[imp][i]
-                    diff = imperiors[imp][i] - colonies[imp][col][i]
+                    valImp = imperialists[imp][i]
+                    diff = imperialists[imp][i] - colonies[imp][col][i]
                     if diff >= 0:
                         colonies[col][i] += np.random.uniform(0, self.beta*diff)
                     else:
                         colonies[col][i] += np.random.uniform(self.beta*diff, 0)
         return colonies
 
-    def __checkPosition(self, colonies, imperiors, f):
-        for i in range(len(imperiors)):
-            imperior = imperiors[i]
-            for colony in colonies[i]:
+    def __checkPosition(self, colonies, imperialists, f):
+        for i in range(len(imperialists)):
+            imperialist = copy.copy(imperialists[i])
+            for j in range(len(colonies[i])):
                 if self.if_min == True:
-                    if f(imperior) < f(colony):
-                        imperiors[i] = colonies[i]
-                        colonies[i] = imperior
-                        imperior = colonies[i]
+                    if f(imperialists[i]) < f(colonies[i][j]):
+                        imperialists[i] = colonies[i][j]
+                        colonies[i][j] = imperialist
                 if self.if_min == False:
-                    if f(imperior) > f(colony):
-                        imperiors[i] = colonies[i]
-                        colonies[i] = imperior
-                        imperior = colonies[i]
-        return imperiors, colonies
+                    if f(imperialists[i]) > f(colonies[i][j]):
+                        imperialists[i] = colonies[i][j]
+                        colonies[i] = imperialist
+        return imperialists, colonies
 
-    def __totalPowerOfEmpire(self, costOfCountry, coloniesOfImp):
+    def __eliminatePowerlessEmpires(self, colonies, imperiors):
+        powerlessImperiors = np.argwhere(len(colonies) == 0)
+        return powerlessImperiors
+
+
+    def __totalPowerOfEmpire(self, costOfCountry, colonies):
         totalPowerEmp = []
-        for i in range(self.numImp):
-            if coloniesOfImp[i].size == 0:
+        for i in range(len(colonies)):
+            if colonies[i].size == 0:
                 meanColony = 0
             else:
-                meanColony = np.mean(coloniesOfImp[i])
+                meanColony = np.mean(colonies[i])
             totalPowerEmp.append(costOfCountry[i]+self.xi*meanColony)
         return totalPowerEmp
 
-    #def __peekWeakestColony(self, colonies, f):
-        #weakest = colonies[len(colonies) - 1][0]
-        #for i in range(1, len(colonies(len(colonies) - 1))):
-            #if self.if_min == True:
-                #if f(weakest) < f(colonies[i]):
-                    #weakest =
+    def __competition(self, colonies, imperialists, bestImperialist, f):
+        if not colonies[-1]:
+            weakest = colonies[-1][0]
+            for i in range(1, len(colonies[-1])):
+                if self.if_min == True:
+                    if f(weakest) < f(colonies[i]):
+                        weakest = colonies[i]
+        else:
+            colonies = colonies[:-1]
+        imperialists[bestImperialist].append(weakest)
+        return colonies, imperialists
+
 
 
 
