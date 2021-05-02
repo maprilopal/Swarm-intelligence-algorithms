@@ -1,5 +1,6 @@
 import copy
 
+import numpy
 import numpy as np
 
 class Imperialistic:
@@ -13,7 +14,7 @@ class Imperialistic:
         self.beta = kwargs.get('beta', 2)
         self.gamma = kwargs.get('gamma', 0.25)
         self.xi = kwargs.get('xi', 0.1)
-        self.numImp = kwargs.get('numberImp', int(0.4*self.N))
+        self.numImp = kwargs.get('numberImp', int(0.2*self.N))
         self.numCol = int(self.N - self.numImp)
 
 
@@ -88,13 +89,13 @@ class Imperialistic:
         for imp in range(len(imperialists)):
             for col in range(len(colonies[imp])):
                 for i in range(d):
-                    valCol = colonies[col][i]
-                    valImp = imperialists[imp][i]
+                    #valCol = colonies[imp][col][i]
+                    #valImp = imperialists[imp][i]
                     diff = imperialists[imp][i] - colonies[imp][col][i]
                     if diff >= 0:
-                        colonies[col][i] += np.random.uniform(0, self.beta*diff)
+                        colonies[imp][col][i] += np.random.uniform(0, self.beta*diff)
                     else:
-                        colonies[col][i] += np.random.uniform(self.beta*diff, 0)
+                        colonies[imp][col][i] += np.random.uniform(self.beta*diff, 0)
         return colonies
 
     def __checkPosition(self, colonies, imperialists, f):
@@ -127,15 +128,16 @@ class Imperialistic:
         return totalPowerEmp
 
     def __competition(self, colonies, imperialists, bestImperialist, f):
-        if not colonies[-1]:
+        if len(colonies[-1]) == 0:
+            weakest = imperialists[-1]
+            colonies[bestImperialist] = numpy.append(colonies[bestImperialist], weakest)
+            imperialists = imperialists[:-1]
+        else:
             weakest = colonies[-1][0]
             for i in range(1, len(colonies[-1])):
                 if self.if_min == True:
                     if f(weakest) < f(colonies[i]):
                         weakest = colonies[i]
-        else:
-            colonies = colonies[:-1]
-        imperialists[bestImperialist].append(weakest)
         return colonies, imperialists
 
 
