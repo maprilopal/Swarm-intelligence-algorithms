@@ -1,6 +1,4 @@
 import numpy as np
-from graphics import Graphics
-import time
 
 
 class Gsa:
@@ -14,17 +12,14 @@ class Gsa:
     # num_it - number of iterations
     # G - gravitational acceleration, assigned value is 1
     # eps - epsilon, small value to avoid division by zero
-    # fit - fitness function, OPTIONAL, assigned value is objective function
-    # if_fit - if fitness function is assigned
     def __init__(self, **kwargs):
         """
-        :param args: f, N, s_low, s_up, num_it, G, eps, fit
+        :param args: f, N, s_low, s_up, num_it, G, eps
         """
         self.N = kwargs.get('N', 10)
         self.b_low = kwargs.get('b_low', -10)
         self.b_up = kwargs.get('b_up', 10)
         self.num_it = kwargs.get('num_it', 20)
-        self.if_fit = kwargs.get('if_fit', False)
         self.if_min = kwargs.get('if_min', True)
         self.G0 = kwargs.get('G0', 2)
         self.G = self.G0
@@ -32,21 +27,9 @@ class Gsa:
         self.kbest = kwargs.get('kbest', 1)
         self.return_all_best = kwargs.get('return_all_best', False)
 
-    def change_G(self, new_G):
-        self.G = new_G
-
-    def change_eps(self, new_eps):
-        self.eps = new_eps
-
-    def change_fitF(self, new_fit):
-        self.fit = new_fit
-        self.if_fit = True
-
     def __make_init_population(self, f):
         # Generate initial population
         X = (self.b_up - self.b_low) * np.random.random_sample((self.N, self.d)) + self.b_low
-        #X = np.array([[2,2],[2,2],[5,2],[4,5],[1,3]])
-        #X = np.random.randint(-5, 5, (self.N, self.d))
         # Evaluate the fitness for each agent
         fit = np.array([f(X[i]) for i in range(self.N)])
         best, worst, i_best = self.__best_and_worst(fit)
@@ -58,25 +41,6 @@ class Gsa:
         a = self.__acceleration(F, M)
         # Calculate velocity
         v = self.__velocity(np.zeros((self.N, self.d)), a)
-        X = self.__positions(X, v)
-        return X, M, F, a, v
-
-    def __make_init_populationFit(self, f, fitF):
-        # Generate initial population
-        X = (self.b_up - self.b_low) * np.random.rand(self.N, self.d) + self.b_low
-        # Evaluate the fitness for each agent
-        values_f = np.array([f(X[i]) for i in range(self.N)])
-        fit = np.array([fitF(values_f[i]) for i in range(self.N)])
-        best, worst, i_best = self.__best_and_worst(fit)
-        # Calculate the masses from fitness
-        M = self.__masses(fit, best, worst)
-        # Calculate the force
-        F = self.__force(M, X)
-        # Calculate acceleration
-        a = self.__acceleration(F, M)
-        # Calculate velocity
-        v = self.__velocity(np.zeros((self.N, self.d)), a)
-        #Calculate new positions
         X = self.__positions(X, v)
         return X, M, F, a, v
 
@@ -107,31 +71,6 @@ class Gsa:
         else:
             return X[best_i]
 
-    def optimizeFit(self, f, fitF):
-        self.if_fit = True
-        self.d = len(f.__code__.co_varnames) - 1
-        X, M, F, a, v = self.__make_init_populationFit(f, fitF)
-        X = self.__positions(X,v)
-        for i in range(self.num_it):
-            fit = self.__fitnessFit(X, f, fitF)
-            self.G = self.__update_grav_force(i)
-            best, worst, best_i = self.__best_and_worst(fit)
-            M = self.__masses(fit, best, worst)
-            Kbest = self.__Kbest(M, best_i)
-            M = M[Kbest]
-            X = X[Kbest]
-            v = v[Kbest]
-            F = self.__force(M, X)
-            a = self.__acceleration(F, M)
-            v = self.__velocity(v, a)
-            if len(X) == 1:
-                break
-        values = []
-        for x in X:
-            values.append(f(x))
-        best, worst, best_i = self.__best_and_worst(values)
-        return X[best_i][0]
-
     def __best_and_worst(self, fit):
         if self.if_min == True:
             best = np.min(fit)
@@ -152,11 +91,6 @@ class Gsa:
         fit = np.array([f(x) for x in X])
         return fit
 
-    def __fitnessFit(self, X, f, fitF):
-        values_f = np.array([f(x) for x in X])
-        fit = np.array([fitF(v) for v in values_f])
-        return fit
-
     def __force(self, M, X):
         F = []
         for i in range(len(M)):
@@ -168,7 +102,6 @@ class Gsa:
                         f[k] += ((self.G * M[i] * M[j])/(R**3 + self.eps)) * (X[i][k] - X[j][k])
             F.append(f)
         return np.array(F)
-
 
     def __acceleration(self, F, M):
         a = np.zeros((len(F), self.d))
@@ -188,17 +121,14 @@ class Gsa:
         for i in range(len(v)):
             for j in range(self.d):
                 new_X[i][j] = X[i][j] + v[i][j]
-                if (new_X[i][j] > self.b_up) | (new_X[i][j]< self.b_low):
+                if (new_X[i][j] > self.b_up) | (new_X[i][j] < self.b_low):
                     new_X[i][j] -= v[i][j]
-                #if new_X[i][j] > self.b_up:
-                    #new_X[i][j] = self.b_up - np.random.rand()
-                #if new_X[i][j] < self.b_low:
-                    #new_X[i][j] = self.b_low + np.random.rand()
         return new_X
 
     def __update_grav_force(self, t):
         beta = 20
         return self.G0*np.exp((-beta*t)/self.num_it) + self.eps
+        #return self.G0*((t/self.num_it)**beta)
 
     def __Kbest(self, M, best_i):
         sortedM = np.argsort(M)[::-1]
@@ -206,55 +136,6 @@ class Gsa:
         if best_i not in sortedM:
             sortedM = np.append(sortedM, best_i)
         return sortedM
-
-
-
-#def f(var):
-#    x1, x2 = var
-#    return 4*(x1**2) - 2.1*(x1**4) + (x1**6)/3 + x1*x2 -4*(x2**2) +4*(x2**4)
-
-def f(var):
-    x1, x2 = var
-    return x1**2 + x2**2 - 10*(np.cos(2*np.pi*x1) + np.cos(2*np.pi*x2)) + 20
-
-def f2(var):
-    x1, x2 = var
-    return x1**3 + x2**3
-
-def f3(var):
-    x1, x2 = var
-    return np.sin(x1+x2**2)
-
-def ffit(var):
-    x1 = var
-    return 1/x1
-
-def fitExp4(var):
-    x = var
-    return 1+np.exp(x)
-
-def Matyas(var):
-    x1, x2 = var
-    return 0.26*(x1**2 + x2**2) - 0.48*(x1*x2)
-
-#ar = {'N': 5, 'b_low': -5.12, 'b_up': 5.12, 'num_it': 10}
-values = []
-start = time.time()
-for i in range(1):
-    example = Gsa(N = 100, b_low= -10, b_up= 10, num_it= 100, G = 100)
-    res = example.optimize(Matyas)
-    values.append(res)
-    #print(res)
-    #print(res, "--->", f2(res))
-#print(f([0,0]))
-end = time.time()
-print("time: ", end - start)
-print(np.mean(values, axis=0))
-#example_all = gsa(N=50, b_low=-5.12, b_up=5.12, num_it=50, G=100, return_all_best=True)
-#print(example_all.optimize(f2))
-
-#graphsMatyas = show_graphics()
-#graphsMatyas.plot_f_3D_plotly(Matyas)
 
 
 
