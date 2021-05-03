@@ -1,11 +1,10 @@
 import copy
-
-import numpy
 import numpy as np
+
 
 class Imperialistic:
     def __init__(self, **kwargs):
-        self.N = kwargs.get('N', 20)
+        self.N = kwargs.get('N', 10)
         self.b_low = kwargs.get('b_low', -10)
         self.b_up = kwargs.get('b_up', 10)
         self.num_it = kwargs.get('num_it', 20)
@@ -14,7 +13,7 @@ class Imperialistic:
         self.beta = kwargs.get('beta', 2)
         self.gamma = kwargs.get('gamma', 0.25)
         self.xi = kwargs.get('xi', 0.1)
-        self.numImp = kwargs.get('numberImp', int(0.2*self.N))
+        self.numImp = kwargs.get('numberImp', int(0.4*self.N))
         self.numCol = int(self.N - self.numImp)
 
 
@@ -43,21 +42,22 @@ class Imperialistic:
 
             # Move the colonies toward their revelant imperialst
             colonies = self.__moveColonies(colonies, imperialists, d)
+
             # Check if the imperialist have better positions than a colony
             colonies, imperialists = self.__checkPosition(colonies, imperialists, f)
 
             # Total cost of an empire (total power)
             totalCostEmp = self.__totalPowerOfEmpire(colonies, imperialists, f)
 
-            fEmpire, fImp = self.__cost(colonies, imperialists, f)
             # Normalized total cost
             normTotalCostEmp = totalCostEmp - np.max(totalCostEmp)
+
             # Possession probability of each empire
             P = np.abs(normTotalCostEmp / np.sum(normTotalCostEmp))
             R = np.random.uniform(0, 1, size=np.size(P))
             D = P - R
-            maxImp = np.argmax(D)
-            minImp = np.argmin(D)
+            maxImp = np.argmin(D)
+            minImp = np.argmax(D)
 
             # Imperialistic Competition
             colonies, imperialists = self.__competition(colonies, imperialists, maxImp, minImp, f)
@@ -82,13 +82,12 @@ class Imperialistic:
         for imp in range(len(imperialists)):
             for col in range(len(colonies[imp])):
                 for i in range(d):
-                    #valCol = colonies[imp][col][i]
-                    #valImp = imperialists[imp][i]
-                    diff = imperialists[imp][i] - colonies[imp][col][i]
-                    if diff >= 0:
-                        colonies[imp][col][i] += np.random.uniform(0, self.beta*diff) + np.random.uniform(-self.gamma, self.gamma)
-                    else:
-                        colonies[imp][col][i] += np.random.uniform(self.beta*diff, 0) + np.random.uniform(-self.gamma, self.gamma)
+                    if (colonies[imp][col][i] < self.b_up) | (colonies[imp][col][i] > self.b_low):
+                        diff = imperialists[imp][i] - colonies[imp][col][i]
+                        if diff >= 0:
+                            colonies[imp][col][i] += np.random.uniform(0, self.beta*diff) + np.random.uniform(-self.gamma, self.gamma)
+                        else:
+                            colonies[imp][col][i] += np.random.uniform(self.beta*diff, 0) + np.random.uniform(-self.gamma, self.gamma)
         return colonies
 
     def __checkPosition(self, colonies, imperialists, f):
@@ -96,13 +95,13 @@ class Imperialistic:
             imperialist = copy.copy(imperialists[i])
             for j in range(len(colonies[i])):
                 if self.if_min == True:
-                    if f(imperialists[i]) < f(colonies[i][j]):
+                    if f(imperialists[i]) > f(colonies[i][j]):
                         imperialists[i] = colonies[i][j]
                         colonies[i][j] = imperialist
                 if self.if_min == False:
-                    if f(imperialists[i]) > f(colonies[i][j]):
+                    if f(imperialists[i]) < f(colonies[i][j]):
                         imperialists[i] = colonies[i][j]
-                        colonies[i] = imperialist
+                        colonies[i][j] = imperialist
         return colonies, imperialists
 
     def __cost(self, colonies, imperialists, f):
@@ -139,12 +138,7 @@ class Imperialistic:
                 if self.if_min == True:
                     if f(weakest) < f(colonies[weakestImp][i]):
                         weakest = colonies[weakestImp][i]
-            #a = copy.copy(colonies[bestImp])
-            #a = np.append(colonies[bestImp], np.array(weakest))
             colonies[bestImp] = np.reshape(np.append(colonies[bestImp], weakest), (-1,2))
-            #colonies[bestImp] = np.append(colonies[bestImp], weakest)
-            #if colonies[bestImp].shape[0] == 2:
-                #colonies[bestImp] = np.reshape(colonies[bestImp], (1, 2))
             colonies[weakestImp] = np.array([colony for colony in colonies[weakestImp] if not np.all(colony == weakest)])
         return colonies, imperialists
 
@@ -159,5 +153,8 @@ def Matyas(var):
     x1, x2 = var
     return 0.26*(x1**2 + x2**2) - 0.48*(x1*x2)
 
-alg = Imperialistic()
-print(alg.optimize(Matyas))
+
+for i in range(1, 15):
+    alg = Imperialistic(N=10*i)
+    wynik = alg.optimize(Matyas)
+    print(wynik, "--------->", Matyas(wynik[0]))
