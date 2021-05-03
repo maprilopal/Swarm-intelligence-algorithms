@@ -141,20 +141,3 @@ class Imperialistic:
             colonies[bestImp] = np.reshape(np.append(colonies[bestImp], weakest), (-1,2))
             colonies[weakestImp] = np.array([colony for colony in colonies[weakestImp] if not np.all(colony == weakest)])
         return colonies, imperialists
-
-
-
-
-
-
-
-
-def Matyas(var):
-    x1, x2 = var
-    return 0.26*(x1**2 + x2**2) - 0.48*(x1*x2)
-
-
-for i in range(1, 15):
-    alg = Imperialistic(N=10*i)
-    wynik = alg.optimize(Matyas)
-    print(wynik, "--------->", Matyas(wynik[0]))

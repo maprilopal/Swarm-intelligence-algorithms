@@ -147,7 +147,7 @@ class StatisticClonalg(Clonalg):
         result = []
         for fi in self.fi:
             clonalg = Clonalg(fi=fi)
-            result.append((fi, clonalg.optimize(f, fi=fi)))
+            result.append((fi, clonalg.optimize(f)))
         return result
 
     def check_c(self, f):
@@ -183,24 +183,5 @@ class StatisticClonalg(Clonalg):
         return pd.DataFrame(result, columns=['N', 'gen', 'p','beta','fi','c','k', 'best', 'f(best)'])
 
 
-
-
-
-
-
-def f(var):
-    x1, x2 = var
-    return x1**2 + x2**2 - 10*(np.cos(2*np.pi*x1) + np.cos(2*np.pi*x2)) + 20
-N = list(range(10,20,10))
-gen = list(range(5,20,5))
-p = list(map(lambda x: x/10.0, range(5,35,10)))
-beta = list(map(lambda x: x/10.0, range(5,35,10)))
-fi = list(map(lambda x: x/10.0, range(1,8,2)))
-c = list(map(lambda x: x/10.0, range(1,6,1)))
-k = list(map(lambda x: x/10.0, range(1,8,2)))
-ex = StatisticClonalg(N=N, generations=gen, p_max=p, beta=beta, fi=fi, c=c, k=k)
-data = ex.check_all(f)
-#df = pd.DataFrame(data, columns=['N', 'value'])
-print(data)
 
 
