@@ -5,7 +5,7 @@ import numpy as np
 
 class Imperialistic:
     def __init__(self, **kwargs):
-        self.N = kwargs.get('N', 20)
+        self.N = kwargs.get('N', 10)
         self.b_low = kwargs.get('b_low', -10)
         self.b_up = kwargs.get('b_up', 10)
         self.num_it = kwargs.get('num_it', 20)
@@ -14,7 +14,7 @@ class Imperialistic:
         self.beta = kwargs.get('beta', 2)
         self.gamma = kwargs.get('gamma', 0.25)
         self.xi = kwargs.get('xi', 0.1)
-        self.numImp = kwargs.get('numberImp', int(0.2*self.N))
+        self.numImp = kwargs.get('numberImp', int(0.4*self.N))
         self.numCol = int(self.N - self.numImp)
 
 
@@ -56,8 +56,8 @@ class Imperialistic:
             P = np.abs(normTotalCostEmp / np.sum(normTotalCostEmp))
             R = np.random.uniform(0, 1, size=np.size(P))
             D = P - R
-            maxImp = np.argmax(D)
-            minImp = np.argmin(D)
+            maxImp = np.argmin(D)
+            minImp = np.argmax(D)
 
             # Imperialistic Competition
             colonies, imperialists = self.__competition(colonies, imperialists, maxImp, minImp, f)
@@ -96,13 +96,13 @@ class Imperialistic:
             imperialist = copy.copy(imperialists[i])
             for j in range(len(colonies[i])):
                 if self.if_min == True:
-                    if f(imperialists[i]) < f(colonies[i][j]):
+                    if f(imperialists[i]) > f(colonies[i][j]):
                         imperialists[i] = colonies[i][j]
                         colonies[i][j] = imperialist
                 if self.if_min == False:
-                    if f(imperialists[i]) > f(colonies[i][j]):
+                    if f(imperialists[i]) < f(colonies[i][j]):
                         imperialists[i] = colonies[i][j]
-                        colonies[i] = imperialist
+                        colonies[i][j] = imperialist
         return colonies, imperialists
 
     def __cost(self, colonies, imperialists, f):
@@ -159,5 +159,8 @@ def Matyas(var):
     x1, x2 = var
     return 0.26*(x1**2 + x2**2) - 0.48*(x1*x2)
 
-alg = Imperialistic()
-print(alg.optimize(Matyas))
+
+for i in range(1, 15):
+    alg = Imperialistic(N=10*i)
+    wynik = alg.optimize(Matyas)
+    print(wynik, "--------->", Matyas(wynik[0]))
