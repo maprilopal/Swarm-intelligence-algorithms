@@ -1,5 +1,4 @@
 import numpy as np
-from graphics import Graphics
 import pandas as pd
 
 class Clonalg:
