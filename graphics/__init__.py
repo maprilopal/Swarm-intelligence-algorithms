@@ -61,5 +61,5 @@ def f(var):
     x1, x2 = var
     return x1**2 + x2**2 - 10*(np.cos(2*np.pi*x1) + np.cos(2*np.pi*x2)) + 20
 
-#example = show_graphics(b_low = -5, b_up = 5)
-#example.plot_f_3D_plotly(f)
+#example = Graphics(b_low = -5, b_up = 5)
+#example.plot_f_3D_matplolib(f)
