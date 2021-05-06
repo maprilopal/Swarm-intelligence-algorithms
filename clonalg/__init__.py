@@ -14,6 +14,7 @@ class Clonalg:
         self.fi = kwargs.get('fi', 0.2)
         self.k = kwargs.get('k', 0.95)
         self.if_min = kwargs.get('if_min', True)
+        self.return_all_best = kwargs.get('return_all_best', False)
 
     def optimize(self, f):
         # Generate initial population
@@ -46,7 +47,10 @@ class Clonalg:
         fit = np.array([f(X[i]) for i in range(self.N)])
         self.best, self.worst, best_i = self.__best_and_worst(fit)
         progress.append(X[best_i])
-        return [X[best_i], progress]
+        if self.return_all_best == True:
+            return progress
+        else:
+            return X[best_i]
 
     def __copies(self, X):
         Nc = np.array([int(self.beta*self.N/i) for i in range(1, int(self.c*self.N)+1)])
