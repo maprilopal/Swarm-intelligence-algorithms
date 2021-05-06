@@ -62,7 +62,7 @@ class Imperialistic:
 
             # Imperialistic Competition
             colonies, imperialists = self.__competition(colonies, imperialists, maxImp, minImp, f)
-        return imperialists
+        return imperialists[0]
 
 
     def __divideColonies(self, colonies, numColOfImp):
