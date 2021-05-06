@@ -15,6 +15,7 @@ class Imperialistic:
         self.xi = kwargs.get('xi', 0.1)
         self.numImp = kwargs.get('numberImp', int(0.4*self.N))
         self.numCol = int(self.N - self.numImp)
+        self.return_all_best = kwargs.get('return_all_best', False)
 
 
     def optimize(self, f):
@@ -61,7 +62,6 @@ class Imperialistic:
 
             # Imperialistic Competition
             colonies, imperialists = self.__competition(colonies, imperialists, maxImp, minImp, f)
-
         return imperialists
 
 
