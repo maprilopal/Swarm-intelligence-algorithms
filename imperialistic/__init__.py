@@ -86,8 +86,16 @@ class Imperialistic:
                         diff = imperialists[imp][i] - colonies[imp][col][i]
                         if diff >= 0:
                             colonies[imp][col][i] += np.random.uniform(0, self.beta*diff) + np.random.uniform(-self.gamma, self.gamma)
+                            if colonies[imp][col][i] > self.b_up:
+                                colonies[imp][col][i] = self.b_up - np.random.uniform(0, self.beta*diff)
+                            if colonies[imp][col][i] < self.b_low:
+                                colonies[imp][col][i] = self.b_low + np.random.uniform(0, self.beta * diff)
                         else:
                             colonies[imp][col][i] += np.random.uniform(self.beta*diff, 0) + np.random.uniform(-self.gamma, self.gamma)
+                            if colonies[imp][col][i] > self.b_up:
+                                colonies[imp][col][i] = self.b_up - np.random.uniform(0, self.beta*diff)
+                            if colonies[imp][col][i] < self.b_low:
+                                colonies[imp][col][i] = self.b_low + np.random.uniform(0, self.beta * diff)
         return colonies
 
     def __checkPosition(self, colonies, imperialists, f):
