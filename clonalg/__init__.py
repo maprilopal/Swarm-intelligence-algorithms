@@ -44,6 +44,7 @@ class Clonalg:
             new_X = (self.b_up - self.b_low) * np.random.uniform(0, 1, (int(self.N*(1 - self.c)), self.d)) + self.b_low
             # Combine the remaining with new generated
             X = np.concatenate((stay, new_X), axis=0)
+            self.N = len(X)
         fit = np.array([f(X[i]) for i in range(self.N)])
         self.best, self.worst, best_i = self.__best_and_worst(fit)
         progress.append(X[best_i])
@@ -63,8 +64,10 @@ class Clonalg:
         diff = self.b_up - self.b_low
         for i in range(len(copies)):
             for j in range(len(copies[i])):
-                elem = copies[i][j] + p_i[i]*diff*np.random.normal(0,1)
-                copies[i][j] = elem
+                elem = copies[i][j] + p_i[i]*diff*np.random.normal(0,1,2)
+                for d in range(self.d):
+                    if (elem[d] < self.b_up) and (elem[d] > self.b_low):
+                        copies[i][j][d] = elem[d]
         return copies
 
     def __check_copies(self, copies, hyper_copies, f):
