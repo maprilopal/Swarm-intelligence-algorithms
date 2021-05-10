@@ -7,8 +7,8 @@ class Gsa:
     # f - objective function
     # N - population, number of agents
     # d - dimension of f, as we pass on one argument in function, which is list of arg, we substract 1 from number of arg
-    # b_low - lower border of search area
-    # b_up - upper border of search area
+    # b_low - lower bound of search area
+    # b_up - upper bound of search area
     # num_it - number of iterations
     # G - gravitational acceleration, assigned value is 1
     # eps - epsilon, small value to avoid division by zero
