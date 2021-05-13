@@ -24,7 +24,7 @@ class Gsa:
         self.G0 = kwargs.get('G0', 2)
         self.G = self.G0
         self.eps = kwargs.get('eps', 0.0001)
-        self.kbest = kwargs.get('kbest', 1)
+        self.kbest = kwargs.get('kbest', 0)
         self.return_all_best = kwargs.get('return_all_best', False)
 
     def __make_init_population(self, f):
@@ -62,7 +62,7 @@ class Gsa:
             a = self.__acceleration(F, M)
             v = self.__velocity(v, a)
             X = self.__positions(X, v)
-            if len(X) == 1:
+            if len(X) < self.kbest:
                 break
         best, worst, best_i = self.__best_and_worst(self.__fitness(X, f))
         values.append(X[best_i])
