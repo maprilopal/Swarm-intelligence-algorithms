@@ -54,7 +54,7 @@ class Clonalg:
             return X[best_i]
 
     def __copies(self, X):
-        Nc = np.array([int(self.beta*self.N/i) for i in range(1, int(self.c*self.N)+1)])
+        Nc = np.array([int(self.beta*self.N) for i in range(1, int(self.c*self.N)+1)])
         copies = [[] for i in range(int(self.c*self.N))]
         for i in range(int(self.c*self.N)):
             copies[i] = [X[i] for j in range(Nc[i])]
