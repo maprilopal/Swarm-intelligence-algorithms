@@ -131,7 +131,7 @@ class Gsa:
         #return self.G0*((t/self.num_it)**beta)
 
     def __Kbest(self, M, best_i):
-        self.N *= self.kbest
+        self.N = int(self.N * self.kbest)
         sortedM = np.argsort(M)[::-1]
         sortedM = sortedM[:self.N]
         if best_i not in sortedM:
