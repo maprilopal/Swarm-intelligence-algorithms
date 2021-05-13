@@ -24,7 +24,7 @@ class Gsa:
         self.G0 = kwargs.get('G0', 2)
         self.G = self.G0
         self.eps = kwargs.get('eps', 0.0001)
-        self.kbest = kwargs.get('kbest', 0)
+        self.kbest = kwargs.get('kbest', 1)
         self.return_all_best = kwargs.get('return_all_best', False)
 
     def __make_init_population(self, f):
@@ -131,8 +131,9 @@ class Gsa:
         #return self.G0*((t/self.num_it)**beta)
 
     def __Kbest(self, M, best_i):
+        self.N *= self.kbest
         sortedM = np.argsort(M)[::-1]
-        sortedM = sortedM[:-self.kbest]
+        sortedM = sortedM[:self.N]
         if best_i not in sortedM:
             sortedM = np.append(sortedM, best_i)
         return sortedM
