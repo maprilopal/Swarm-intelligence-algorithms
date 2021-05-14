@@ -62,7 +62,7 @@ class Gsa:
             a = self.__acceleration(F, M)
             v = self.__velocity(v, a)
             X = self.__positions(X, v)
-            if len(X) < self.kbest:
+            if len(X) < 2:
                 break
         best, worst, best_i = self.__best_and_worst(self.__fitness(X, f))
         values.append(X[best_i])
