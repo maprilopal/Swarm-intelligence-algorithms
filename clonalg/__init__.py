@@ -45,6 +45,8 @@ class Clonalg:
             # Combine the remaining with new generated
             X = np.concatenate((stay, new_X), axis=0)
             self.N = len(X)
+            if self.N == 1:
+                break
         fit = np.array([f(X[i]) for i in range(self.N)])
         self.best, self.worst, best_i = self.__best_and_worst(fit)
         progress.append(X[best_i])
