@@ -38,7 +38,7 @@ class Imperialistic:
         numColOfImp = np.round(self.numCol*powerImp)
         # Divide colonies in random way
         colonies = self.__divideColonies(countries, numColOfImp)
-
+        imperialists, colonies = self.__removeEmptyEmpire(imperialists, colonies)
         while len(imperialists) > 1:
 
             # Move the colonies toward their revelant imperialst
@@ -62,6 +62,7 @@ class Imperialistic:
 
             # Imperialistic Competition
             colonies, imperialists = self.__competition(colonies, imperialists, maxImp, minImp, f)
+            imperialists, colonies = self.__removeEmptyEmpire(imperialists, colonies)
         return imperialists[0]
 
 
@@ -95,7 +96,6 @@ class Imperialistic:
                         colonies[imp][col][i] = self.b_up - np.random.uniform(0, self.beta, 1)
                     elif colonies[imp][col][i] < self.b_low:
                         colonies[imp][col][i] = self.b_low + np.random.uniform(0, self.beta, 1)
-
         return colonies
 
     def __checkPosition(self, colonies, imperialists, f):
@@ -120,8 +120,6 @@ class Imperialistic:
             for j in range(len(colonies[i])):
                 costOfEmpire[i] += f(colonies[i][j])
         return costOfEmpire, costOfImperialist
-
-
 
     def __totalPowerOfEmpire(self, colonies, imperialists, f):
         totalPowerEmp = []
@@ -149,3 +147,13 @@ class Imperialistic:
             colonies[bestImp] = np.reshape(np.append(colonies[bestImp], weakest), (-1,2))
             colonies[weakestImp] = np.array([colony for colony in colonies[weakestImp] if not np.all(colony == weakest)])
         return colonies, imperialists
+
+    def __removeEmptyEmpire(self, imperialists, colonies):
+        toImp = 0
+        for i in range(len(colonies)):
+            if len(colonies[i]) == 0:
+                colonies[toImp] = np.append(colonies[toImp], [imperialists[i]], axis=0)
+                imperialists = np.delete(imperialists, i, axis=0)
+                colonies = np.delete(colonies, i, axis=0)
+                toImp = toImp+1 % len(imperialists)
+        return imperialists, colonies
