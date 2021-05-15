@@ -21,7 +21,7 @@ class Gsa:
         self.b_up = kwargs.get('b_up', 10)
         self.num_it = kwargs.get('num_it', 20)
         self.if_min = kwargs.get('if_min', True)
-        self.G0 = kwargs.get('G0', 2)
+        self.G0 = kwargs.get('G0', 1)
         self.G = self.G0
         self.eps = kwargs.get('eps', 0.0001)
         self.kbest = kwargs.get('kbest', 1)
@@ -99,7 +99,7 @@ class Gsa:
                 if i != j:
                     R = np.linalg.norm(X[i] - X[j])
                     for k in range(self.d):
-                        f[k] += ((self.G * M[i] * M[j])/(R**3 + self.eps)) * (X[i][k] - X[j][k])
+                        f[k] += ((self.G * M[i] * M[j])/(R + self.eps)) * (X[i][k] - X[j][k])
             F.append(f)
         return np.array(F)
 
