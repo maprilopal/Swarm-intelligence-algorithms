@@ -1,4 +1,6 @@
 import copy
+import random
+
 import numpy as np
 
 
@@ -69,6 +71,7 @@ class Imperialistic:
     def __divideColonies(self, colonies, numColOfImp):
         divColonies = []
         sumCol = 0
+        np.random.shuffle(colonies)
         if sum(numColOfImp) != self.numCol:
             if sum(numColOfImp) > self.numCol:
                 numColOfImp[0] -= sum(numColOfImp) - self.numCol
