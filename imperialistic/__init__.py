@@ -9,8 +9,6 @@ class Imperialistic:
         self.N = kwargs.get('N', 10)
         self.b_low = kwargs.get('b_low', -10)
         self.b_up = kwargs.get('b_up', 10)
-        self.num_it = kwargs.get('num_it', 20)
-        self.if_fit = kwargs.get('if_fit', False)
         self.if_min = kwargs.get('if_min', True)
         self.beta = kwargs.get('beta', 2)
         self.gamma = kwargs.get('gamma', 0.25)
@@ -40,7 +38,7 @@ class Imperialistic:
         numColOfImp = np.round(self.numCol*powerImp)
         # Divide colonies in random way
         colonies = self.__divideColonies(countries, numColOfImp)
-        imperialists, colonies = self.__removeEmptyEmpire(imperialists, colonies)
+        imperialists, colonies = self.__removeEmptyEmpireFirst(imperialists, colonies)
         while len(imperialists) > 1:
 
             # Move the colonies toward their revelant imperialst
@@ -64,7 +62,7 @@ class Imperialistic:
 
             # Imperialistic Competition
             colonies, imperialists = self.__competition(colonies, imperialists, maxImp, minImp, f)
-            imperialists, colonies = self.__removeEmptyEmpire(imperialists, colonies)
+            imperialists, colonies = self.__removeEmptyEmpireSecond(imperialists, colonies, D)
         return imperialists[0]
 
 
@@ -151,12 +149,35 @@ class Imperialistic:
             colonies[weakestImp] = np.array([colony for colony in colonies[weakestImp] if not np.all(colony == weakest)])
         return colonies, imperialists
 
-    def __removeEmptyEmpire(self, imperialists, colonies):
+    def __removeEmptyEmpireFirst(self, imperialists, colonies):
         toImp = 0
-        for i in range(len(colonies)):
+        lenCol = len(colonies)
+        i = 0
+        while i < lenCol:
             if len(colonies[i]) == 0:
                 colonies[toImp] = np.append(colonies[toImp], [imperialists[i]], axis=0)
                 imperialists = np.delete(imperialists, i, axis=0)
                 colonies = np.delete(colonies, i, axis=0)
                 toImp = toImp+1 % len(imperialists)
+                i-=1
+                lenCol-=1
+            i+=1
+        return imperialists, colonies
+
+
+    def __removeEmptyEmpireSecond(self, imperialists, colonies, P):
+        argP = np.argsort(P)
+        toImp = 0
+        lenCol = len(colonies)
+        i = 0
+        while i < lenCol:
+            if len(colonies[i]) == 0:
+                colonies[argP[toImp]] = np.append(colonies[argP[toImp]], [imperialists[i]], axis=0)
+                imperialists = np.delete(imperialists, i, axis=0)
+                colonies = np.delete(colonies, i, axis=0)
+                toImp = toImp+1 % len(imperialists)
+                argP = np.delete(argP, i, axis=0)
+                i-=1
+                lenCol-=1
+            i+=1
         return imperialists, colonies
